@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontakty Jiřího Valocha</title>
+    
+    <!-- leaflet css  -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <link rel="stylesheet" href="MarkerCluster.css">
+    <link rel="stylesheet" href="MarkerCluster.Default.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font: normal 18px Verdana, Arial, sans-serif;
+            color:rgb(228, 228, 228)
+        }
+
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* sidepanel menu */
+        .sidepanel {
+            height: 100vh;
+            width: 0px;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            background-color: rgb(66, 66, 66);
+            overflow-x: hidden;
+            padding-top: 20px;
+            transition: 0.3s;
+        }
+
+        /* popup content */
+        #ppCityState, #ppContent {
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="popup" class="sidepanel">
+        <p id="ppContent"></p>
+    </div>
+    <div id="map"></div>
+</body>
+
+</html>
+
+<!-- leaflet js -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+
+<!-- importing dataset -->
+<script src="dataset.js"></script>
+
+
+<!-- javascript -->
+<script>
+    const BRNO = [49.195061, 16.606836];
+
+    // init 
+    var map = L.map('map',{zoomControl: false}).setView(BRNO, 7);
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    });
+    osmLayer.addTo(map);
+
+    // closing popup on click anywhere on the map
+    map.on('click', () => {
+        document.getElementById("popup").style.width = "0px";
+    })
+
+    // placing markers on the map
+    dataset.forEach(element => {
+        var popupContent = `<h2>${element.city}<br>${element.state}</h2>`;
+        element.people.forEach(person => {
+            if (person.name || person.surname) {
+                popupContent += `<p><b>${person.name} ${person.surname}</b><br>`;
+                if (person.profession) popupContent += `<em>${person.profession}</em><br>`;
+                if (person.institution) popupContent += `${person.institution}<br>`;
+            } else {
+                popupContent += `<b>${person.institution}</b><br>`;
+                if (person.profession) popupContent += `<em>${person.profession}</em><br>`;
+            }
+            if (person.comments) popupContent += `${person.comments}<br>`;
+            });
+        
+        // adding to the map
+        var marker = new L.Marker([element.lat, element.lon]).addTo(map)
+            .on('click', event => {
+                sidepanel = document.getElementById("popup");
+                sidepanel.style.width = "300px";
+                document.getElementById("ppContent").innerHTML = popupContent;
+            })
+        
+    });
+
+
+</script>
